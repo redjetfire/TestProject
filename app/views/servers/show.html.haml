@@ -1,0 +1,34 @@
+%p#notice= notice
+
+%p
+  %b Server:
+  = @server.name
+%p
+  %b Followers:
+  = @server.user_emails.count
+  //= @server.user_emails.join(", ")
+%p
+  %b
+  - if current_user
+    - if @is_follower
+      = link_to "Unfollow", unfollow_server_path(@server), method: :post, class: 'btn'
+    - else
+      = link_to "Follow", follow_server_path(@server), method: :post, class: 'btn'
+
+%p
+  %b Category:
+  = link_to @server.category.name, @server.category
+%ul.cat_list
+  - @server.comments.each do |comment|
+    .com_block
+      %li.cemail= comment.user.try :email
+      %li.comment.comment= comment.comment
+      - if current_user && comment.is_commenter?(current_user)
+        = link_to 'Destroy', server_comment_path(@server, comment), method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn'
+- if user_signed_in?
+  = form_for([@server, @server.comments.build]) do |f|
+    = f.text_area :comment, :size => "36x6", class: 'commentform'
+    %br
+    = f.submit 'Add Comment', class: 'btn'
+- else
+  = link_to('Login', new_user_session_path)
